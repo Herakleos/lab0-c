@@ -34,7 +34,7 @@ void q_free(struct list_head *l)
     list_for_each_safe (li, tmp, l) {
         element_t *delete = list_entry(li, element_t, list);
         list_del(li);
-        free(delete);
+        q_release_element(delete);
     }
     free(l);
 }
@@ -48,6 +48,21 @@ void q_free(struct list_head *l)
  */
 bool q_insert_head(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+
+    element_t *new_head = malloc(sizeof(element_t));
+    if (!new_head)
+        return false;
+    INIT_LIST_HEAD(&new_head->list);
+    size_t size = sizeof(char) * (strlen(s) + 1);  // for NULL terminator
+    new_head->value = malloc(size);
+    if (!new_head->value) {
+        free(new_head);
+        return false;
+    }
+    strncpy(new_head->value, s, size);
+    list_add(&new_head->list, head);
     return true;
 }
 
