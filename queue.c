@@ -75,6 +75,20 @@ bool q_insert_head(struct list_head *head, char *s)
  */
 bool q_insert_tail(struct list_head *head, char *s)
 {
+    if (!head)
+        return false;
+
+    element_t *node = malloc(sizeof(element_t));
+    if (!node)
+        return false;
+    size_t size = sizeof(char) * (strlen(s) + 1);  // for NULL terminator
+    node->value = malloc(size);
+    if (!node->value) {
+        free(node);
+        return false;
+    }
+    strncpy(node->value, s, size);
+    list_add_tail(&node->list, head);
     return true;
 }
 
