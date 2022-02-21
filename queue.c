@@ -233,12 +233,10 @@ void q_swap(struct list_head *head)
         return;
 
     struct list_head *cur = head->next;
-    while (cur->next != head) {
+    while ((cur != head) && (cur->next != head)) {
         struct list_head *tmp = cur->next;
         list_del(cur);
         list_add(cur, tmp);
-        if (cur->next == head)
-            break;
         cur = cur->next;
     }
 }
