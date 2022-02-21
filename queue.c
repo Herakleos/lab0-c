@@ -241,6 +241,13 @@ void q_swap(struct list_head *head)
     }
 }
 
+static inline void swap(char **x, char **y)
+{
+    char *tmp = *x;
+    *x = *y;
+    *y = tmp;
+}
+
 /*
  * Reverse elements in queue
  * No effect if q is NULL or empty
@@ -248,7 +255,22 @@ void q_swap(struct list_head *head)
  * (e.g., by calling q_insert_head, q_insert_tail, or q_remove_head).
  * It should rearrange the existing ones.
  */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+
+    struct list_head *forward = head->next, *backward = head->prev;
+    while (forward != backward) {
+        element_t *fwd = list_entry(forward, element_t, list);
+        element_t *bwd = list_entry(backward, element_t, list);
+        swap(&fwd->value, &bwd->value);
+        forward = forward->next;
+        if (forward == backward)
+            break;
+        backward = backward->prev;
+    }
+}
 
 /*
  * Sort elements of queue in ascending order
