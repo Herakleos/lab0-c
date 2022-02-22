@@ -167,6 +167,18 @@ int q_size(struct list_head *head)
     return len;
 }
 
+struct list_head *find_mid(struct list_head *head)
+{
+    struct list_head *forward = head->next, *backward = head->prev;
+    while (forward != backward) {
+        forward = forward->next;
+        if (forward == backward)
+            break;
+        backward = backward->prev;
+    }
+    return forward;
+}
+
 /*
  * Delete the middle node in list.
  * The middle node of a linked list of size n is the
@@ -179,13 +191,7 @@ bool q_delete_mid(struct list_head *head)
     if (!head || list_empty(head))
         return NULL;
 
-    struct list_head *forward = head->next, *backward = head->prev;
-    while (forward != backward) {
-        forward = forward->next;
-        if (forward == backward)
-            break;
-        backward = backward->prev;
-    }
+    struct list_head *forward = find_mid(head);
     element_t *delete = list_entry(forward, element_t, list);
     list_del(forward);
     q_release_element(delete);
