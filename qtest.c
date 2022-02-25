@@ -767,6 +767,44 @@ bool do_hello(int argc, char *argv[])
     return (bool) printf("Hello, World\n");
 }
 
+static inline void swap(char **x, char **y)
+{
+    char *tmp = *x;
+    *x = *y;
+    *y = tmp;
+}
+
+bool do_shuffle(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    if (!l_meta.l)
+        report(3, "Warning: Calling shuffle on null queue");
+    error_check();
+
+    int cnt = q_size(l_meta.l);
+    if (cnt < 2)
+        report(3, "Warning: Calling shuffle on single node");
+    error_check();
+
+    struct list_head *li;
+    for (li = l_meta.l->prev; (li != l_meta.l && cnt > 1); li = li->prev) {
+        int r = rand() % cnt;
+        struct list_head *tmp = l_meta.l->next;
+        for (int i = 0; i < r; i++)
+            tmp = tmp->next;
+        swap(&list_entry(li, element_t, list)->value,
+             &list_entry(tmp, element_t, list)->value);
+        cnt--;
+    }
+
+    show_queue(3);
+    return !error_check();
+}
+
 static void console_init()
 {
     ADD_COMMAND(new, "                | Create new queue");
@@ -801,6 +839,7 @@ static void console_init()
     ADD_COMMAND(swap,
                 "                | Swap every two adjacent nodes in queue");
     ADD_COMMAND(hello, "                | Print hello message");
+    ADD_COMMAND(shuffle, "               | Shuffle every node in queue");
     add_param("length", &string_length, "Maximum length of displayed string",
               NULL);
     add_param("malloc", &fail_probability, "Malloc failure probability percent",
