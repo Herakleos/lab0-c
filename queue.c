@@ -278,9 +278,74 @@ void q_reverse(struct list_head *head)
     }
 }
 
+struct list_head *merge(struct list_head *a, struct list_head *b)
+{
+    struct list_head *head = NULL, **tail = &head;
+
+    for (;;) {
+        if (strcmp(list_entry(a, element_t, list)->value,
+                   list_entry(b, element_t, list)->value) <= 0) {
+            *tail = a;
+            tail = &a->next;
+            a = a->next;
+            if (!a) {
+                *tail = b;
+                break;
+            }
+        } else {
+            *tail = b;
+            tail = &b->next;
+            b = b->next;
+            if (!b) {
+                *tail = a;
+                break;
+            }
+        }
+    }
+    return head;
+}
+
+struct list_head *merge_sort(struct list_head *head)
+{
+    if (!head || !head->next)
+        return head;
+
+    // find mid
+    struct list_head *fast = head->next, *slow = head;
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    fast = slow->next;
+    slow->next = NULL;
+
+    struct list_head *left = merge_sort(head);
+    struct list_head *right = merge_sort(fast);
+
+    return merge(left, right);
+}
+
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
-void q_sort(struct list_head *head) {}
+void q_sort(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+
+    // to singly linked list
+    head->prev->next = NULL;
+
+    head->next = merge_sort(head->next);
+
+    // to doubly linked list
+    struct list_head *tail = head;
+    while (tail->next) {
+        tail->next->prev = tail;
+        tail = tail->next;
+    }
+    tail->next = head;
+    head->prev = tail;
+}
